@@ -1,37 +1,8 @@
-import pygame
 import math
-import time
 import random
+import pygame
+
 pygame.init()
-
-sizeX = 30
-sizeY = 16
-size = sizeX * sizeY
-mines = 99
-square_size = 30
-border_size = 2
-mine_locations = []
-mine_locations_coord =[]
-Circles =[]
-flagged = []
-amount_flagged = 0
-game_position = 0
-background_colour = (255, 255, 255)
-screenwidth = square_size*sizeX + 200
-screenheight = square_size*sizeY + 200
-win = pygame.display.set_mode((screenwidth, screenheight))
-pygame.display.set_caption('Minesweeper')
-win.fill(background_colour)
-
-while len(mine_locations) < mines:
-    i = random.randint(0, size-1)
-    if i not in mine_locations:
-        mine_locations.append(i)
-
-for i in range(len(mine_locations)):
-    x_coord = mine_locations[i] % sizeX
-    y_coord = math.floor(mine_locations[i] / sizeX)
-    mine_locations_coord.append((x_coord, y_coord))
 
 class button():
     def __init__(self, color, x, y, width, height, text='', text_colour=(0, 0, 0)):
@@ -156,20 +127,19 @@ def show_text(x,y,font_size,font_colour,background_colour,text, font = 'comicsan
     textsurface = font.render(text, 1, font_colour, background_colour)
     win.blit(textsurface, (x, y))
 
-tileimg = pygame.image.load("flag.jpg")
-tile_resize = pygame.transform.scale(tileimg, (square_size, square_size))
-win.blit(tile_resize, (5, ((screenheight-square_size*sizeY)//2)//2))
-show_text(((screenwidth-square_size*sizeX)//2)//2-20, ((screenheight-square_size*sizeY)//2)//2, 50, (255, 0, 0), (255, 255, 255), str(mines-len(Circles)) + "   ")
+
 
 def GameWon():
     global game_position
     game_position = 1
     show_text(screenwidth // 2 - 110, (screenwidth - square_size * sizeX) // 2 - 70, 50, (255, 0, 0), (255, 255, 255),"GAME WON")
+    restart()
 
 def GameLost():
     global game_position
     game_position = -1
     show_text(screenwidth//2-110,(screenwidth-square_size*sizeX)//2-70, 50, (255,0,0), (255,255,255), "GAME OVER")
+    restart()
 
 def redrawWindow():
     for i in range(size):
@@ -182,34 +152,112 @@ def redrawWindow():
         for i in range(mines):
             Buttons[mine_locations[i]].color = (255, 0, 0)
 
-run = True
-Buttons = [button((189, 189, 189), square_size * (i % sizeX) + (screenwidth-square_size*sizeX)//2, square_size * (math.floor(i/sizeX)) + (screenheight-square_size*sizeY)//2, square_size-border_size, square_size-border_size) for i in range(size)]
+def restart():
+    global restart_button
+    restart_button = button((0,255,0), (screenwidth - square_size * sizeX) // 2 + 65, (screenheight + square_size * sizeY) // 2 + 25, 130, 50, "PLAY AGAIN")
+    restart_button.draw(win,outline=(0,0,0))
 
-while run:
-    redrawWindow()
-    pygame.display.update()
-    for event in pygame.event.get():
-        pos = pygame.mouse.get_pos()
-        if event.type == pygame.QUIT:
-            run = False
-            pygame.quit()
-            quit()
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if game_position == 0:
-                if event.button == 1:
-                    for i in range(size):
-                        if Buttons[i].isOver(pos):
-                            x_coord = i % sizeX
-                            y_coord = math.floor(i/sizeX)
-                            count = count_adjacent(x_coord,y_coord)
-                            #print(f"Clicked Button at ({str(x_coord)},{str(y_coord)})")
-                            if not Buttons[i].flagged:
-                                search(x_coord,y_coord)
+def on_start():
+    global sizeX
+    global sizeY
+    global mines
+    sizeX = 9
+    sizeY = 9
+    mines = 10
+    main()
 
-                elif event.button == 3:
-                    for i in range(size):
-                        if Buttons[i].isOver(pos):
-                            x_coord = i % sizeX
-                            y_coord = math.floor(i / sizeX)
-                            flag(x_coord,y_coord)
+def main():
+    global win
+    global Circles
+    global mine_locations_coord
+    global flagged
+    global mine_locations
+    global Buttons
+    global amount_flagged
+    global screenheight
+    global screenwidth
+    global square_size
+    global size
+    global border_size
+    global game_position
+    global run
+    size = sizeX * sizeY
+    square_size = 30
+    border_size = 2
+    mine_locations = []
+    mine_locations_coord = []
+    Circles = []
+    flagged = []
+    amount_flagged = 0
+    game_position = 0
+    screenwidth = square_size*sizeX + 200
+    screenheight = square_size*sizeY + 200
+    background_colour = (255, 255, 255)
+
+    win = pygame.display.set_mode((screenwidth, screenheight))
+    pygame.display.set_caption('Minesweeper')
+    win.fill(background_colour)
+
+    while len(mine_locations) < mines:
+        i = random.randint(0, size - 1)
+        if i not in mine_locations:
+            mine_locations.append(i)
+
+    for i in range(len(mine_locations)):
+        x_coord = mine_locations[i] % sizeX
+        y_coord = math.floor(mine_locations[i] / sizeX)
+        mine_locations_coord.append((x_coord, y_coord))
+
+    tileimg = pygame.image.load("flag.jpg")
+    tile_resize = pygame.transform.scale(tileimg, (square_size, square_size))
+    win.blit(tile_resize, (5, ((screenheight - square_size * sizeY) // 2) // 2))
+    show_text(((screenwidth - square_size * sizeX) // 2) // 2 - 20, ((screenheight - square_size * sizeY) // 2) // 2,
+              50, (255, 0, 0), (255, 255, 255), str(mines - len(Circles)) + "   ")
+
+    run = True
+    Buttons = [button((189, 189, 189), square_size * (i % sizeX) + (screenwidth - square_size * sizeX) // 2,square_size * (math.floor(i / sizeX)) + (screenheight - square_size * sizeY) // 2,square_size - border_size, square_size - border_size) for i in range(size)]
+    while run:
+        redrawWindow()
+        pygame.display.update()
+        for event in pygame.event.get():
+            pos = pygame.mouse.get_pos()
+            if event.type == pygame.QUIT:
+                run = False
+                pygame.quit()
+                quit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if game_position >=0:
+                    if event.button == 1:
+                        for i in range(size):
+                            if Buttons[i].isOver(pos):
+                                x_coord = i % sizeX
+                                y_coord = math.floor(i / sizeX)
+                                count = count_adjacent(x_coord, y_coord)
+                                # print(f"Clicked Button at ({str(x_coord)},{str(y_coord)})")
+                                if not Buttons[i].flagged:
+                                    search(x_coord, y_coord)
+
+                    elif event.button == 3 and game_position == 0:
+                        for i in range(size):
+                            if Buttons[i].isOver(pos):
+                                x_coord = i % sizeX
+                                y_coord = math.floor(i / sizeX)
+                                flag(x_coord, y_coord)
+                if game_position == -1:
+                    GameLost()
+                    if restart_button.isOver(pos):
+                        main()
+                if game_position == 1:
+                    GameWon()
+                    if restart_button.isOver(pos):
+                        main()
+
+
+if __name__ == '__main__':
+   on_start()
+
+
+
+
+
 
